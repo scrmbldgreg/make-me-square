@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Make me square</title>
+  <title>Make-me-square</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
@@ -48,8 +48,8 @@
         <i class="fa-solid fa-border-all"></i>
       </div>
       <div>
-        <h1 class="text-lg font-bold leading-tight text-white">Make-Me-Square</h1>
-        <p class="text-xs text-slate-400">Generate bordered logo images for tax rec and other m&j newsletters</p>
+        <h1 class="text-lg font-bold leading-tight text-white">Make-me-square</h1>
+        <p class="text-xs text-slate-400">Generate bordered logo images for Tax Recruitment and other M&J Campaigns</p>
       </div>
     </div>
     <div class="flex items-center space-x-3">
@@ -126,29 +126,6 @@
         <!-- 3. Canvas Dimensions -->
         <section class="space-y-3">
           <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <i class="fa-solid fa-expand text-blue-400"></i> Dimensions
-          </h2>
-
-          <div class="flex items-center space-x-2">
-            <div class="flex-1">
-              <label for="canvas-width" class="block text-[11px] text-slate-400 mb-1">Width (px)</label>
-              <input type="number" id="canvas-width" value="240" min="10" max="3000" class="w-full bg-slate-700 border border-slate-600 rounded px-2.5 py-1.5 text-xs text-white">
-            </div>
-            <button id="aspect-lock-btn" class="mt-5 p-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-blue-400 transition" title="Toggle Lock Aspect Ratio">
-              <i id="aspect-lock-icon" class="fa-solid fa-link"></i>
-            </button>
-            <div class="flex-1">
-              <label for="canvas-height" class="block text-[11px] text-slate-400 mb-1">Height (px)</label>
-              <input type="number" id="canvas-height" value="240" min="10" max="3000" class="w-full bg-slate-700 border border-slate-600 rounded px-2.5 py-1.5 text-xs text-white">
-            </div>
-          </div>
-        </section>
-
-        <!-- <hr class="border-slate-700"> -->
-
-        <!-- 3. Canvas Dimensions -->
-        <!-- <section class="space-y-3">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
             <i class="fa-solid fa-expand text-blue-400"></i> Canvas Dimensions
           </h2>
 
@@ -165,7 +142,7 @@
               <input type="number" id="canvas-height" value="240" min="10" max="3000" class="w-full bg-slate-700 border border-slate-600 rounded px-2.5 py-1.5 text-xs text-white">
             </div>
           </div>
-        </section> -->
+        </section>
 
         <hr class="border-slate-700">
 
@@ -247,7 +224,7 @@
       </div>
 
       <p class="text-slate-500 text-xs mt-3 text-center">
-        <i class="fa-solid fa-circle-info mr-1"></i> Preview renders live with strict 240x240 canvas, 2px light gray border, 0px padding & 100% scale defaults.
+        <i class="fa-solid fa-circle-info mr-1"></i> Preview renders live with 240x240 canvas, 2px light gray border, 0px padding & 100% scale defaults.
       </p>
 
     </main>
@@ -326,10 +303,13 @@
     let isAspectLocked = true;
     let originalAspect = 1.0;
 
+    // Load Default Image
+    function loadDefaultImage() {
+      processImageSrc('https://image.m.lexisnexis.co.uk/lib/fe951372746d057f71/m/1/c566baae-1158-4ab2-b880-ae32ddb4c103.png');
+    }
+
     // Render Canvas Routine
     function renderCanvas() {
-      if (!isImageLoaded) return;
-
       const canvasWidth = parseInt(canvasWidthInput.value) || 240;
       const canvasHeight = parseInt(canvasHeightInput.value) || 240;
 
@@ -338,51 +318,53 @@
 
       canvasDimensionsDisplay.textContent = `${canvasWidth} x ${canvasHeight} px`;
 
-      const borderWidth = parseInt(borderWidthInput.value) || 0;
-      const borderColor = borderColorInput.value;
-      const bgColor = bgColorInput.value;
-      const logoPadding = parseInt(logoPaddingInput.value) || 0;
-      const logoScale = (parseInt(logoScaleInput.value) || 100) / 100;
-
-      // Clear Canvas
+      // Clear Canvas to transparent state
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      // 1. Draw Background First
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      // Only render background, image, and border if an image is actually loaded
+      if (isImageLoaded && currentImage.width > 0 && currentImage.height > 0) {
+        const borderWidth = parseInt(borderWidthInput.value) || 0;
+        const borderColor = borderColorInput.value;
+        const bgColor = bgColorInput.value;
+        const logoPadding = parseInt(logoPaddingInput.value) || 0;
+        const logoScale = (parseInt(logoScaleInput.value) || 100) / 100;
 
-      // 2. Draw Centered Image / Logo (UNDER the border)
-      // Base available space for image calculation
-      const availW = Math.max(0, canvasWidth - (logoPadding * 2));
-      const availH = Math.max(0, canvasHeight - (logoPadding * 2));
+        // 1. Draw Background
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      if (availW > 0 && availH > 0) {
-        const imgAspect = currentImage.width / currentImage.height;
-        let drawWidth = availW * logoScale;
-        let drawHeight = drawWidth / imgAspect;
+        // 2. Draw Centered Image / Logo UNDER the border
+        const availW = Math.max(0, canvasWidth - (logoPadding * 2));
+        const availH = Math.max(0, canvasHeight - (logoPadding * 2));
 
-        if (drawHeight > availH * logoScale) {
-          drawHeight = availH * logoScale;
-          drawWidth = drawHeight * imgAspect;
+        if (availW > 0 && availH > 0) {
+          const imgAspect = currentImage.width / currentImage.height;
+          let drawWidth = availW * logoScale;
+          let drawHeight = drawWidth / imgAspect;
+
+          if (drawHeight > availH * logoScale) {
+            drawHeight = availH * logoScale;
+            drawWidth = drawHeight * imgAspect;
+          }
+
+          const drawX = (canvasWidth - drawWidth) / 2;
+          const drawY = (canvasHeight - drawHeight) / 2;
+
+          ctx.drawImage(currentImage, drawX, drawY, drawWidth, drawHeight);
         }
 
-        const drawX = (canvasWidth - drawWidth) / 2;
-        const drawY = (canvasHeight - drawHeight) / 2;
-
-        ctx.drawImage(currentImage, drawX, drawY, drawWidth, drawHeight);
-      }
-
-      // 3. Draw Outer Border Frame LAST (ON TOP of everything)
-      if (borderWidth > 0) {
-        ctx.fillStyle = borderColor;
-        // Top border
-        ctx.fillRect(0, 0, canvasWidth, borderWidth);
-        // Bottom border
-        ctx.fillRect(0, canvasHeight - borderWidth, canvasWidth, borderWidth);
-        // Left border
-        ctx.fillRect(0, borderWidth, borderWidth, canvasHeight - (borderWidth * 2));
-        // Right border
-        ctx.fillRect(canvasWidth - borderWidth, borderWidth, borderWidth, canvasHeight - (borderWidth * 2));
+        // 3. Draw Outer Border Frame LAST (ON TOP of everything)
+        if (borderWidth > 0) {
+          ctx.fillStyle = borderColor;
+          // Top border
+          ctx.fillRect(0, 0, canvasWidth, borderWidth);
+          // Bottom border
+          ctx.fillRect(0, canvasHeight - borderWidth, canvasWidth, borderWidth);
+          // Left border
+          ctx.fillRect(0, borderWidth, borderWidth, canvasHeight - (borderWidth * 2));
+          // Right border
+          ctx.fillRect(canvasWidth - borderWidth, borderWidth, borderWidth, canvasHeight - (borderWidth * 2));
+        }
       }
     }
 
@@ -550,6 +532,14 @@
       logoPaddingVal.textContent = '0px';
       logoScaleInput.value = 100;
       logoScaleVal.textContent = '100%';
+      
+      // Reset aspect ratio lock
+      isAspectLocked = true;
+      originalAspect = 1.0;
+      aspectLockIcon.className = 'fa-solid fa-link';
+      aspectLockBtn.classList.replace('text-slate-400', 'text-blue-400');
+
+      renderCanvas();
       showToast("Reset settings to default!");
     });
 
@@ -578,6 +568,10 @@
       }, 3000);
     }
 
+    // Initialize App On Window Load
+    window.onload = () => {
+      loadDefaultImage();
+    };
   </script>
 </body>
 </html>
